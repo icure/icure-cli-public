@@ -24,6 +24,9 @@ class Api : CliktCommand() {
         config.password = credentials.substringAfter(":")
     }
 
-    init { this.subcommands(DeployCodes()) }
+    init {
+        this.subcommands(DeployCodes())
+        this.subcommands(DesignDocInit())
+    }
 }
 

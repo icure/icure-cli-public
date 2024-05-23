@@ -26,11 +26,8 @@ dependencies {
     implementation(libs.bundles.io.ktor)
     implementation(libs.com.github.ajalt.clikt)
     implementation(libs.org.jetbrains.kotlinx.serialization.json)
-    implementation(libs.icure.kotlin.sdk)
-    implementation(libs.bundles.jackson.libs)
-    implementation(libs.async.jackson.http.client)
+    implementation(libs.icure.sdk)
     implementation(libs.springdoc.kotlin)
-    implementation(libs.icure.dto)
 }
 
 kotlin {
