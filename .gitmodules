@@ -1,0 +1,3 @@
+[submodule "icure-cli"]
+	path = icure-cli
+	url = git@github.com:icure/icure-cli.git

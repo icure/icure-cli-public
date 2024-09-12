@@ -10,9 +10,6 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
 }
 
-rootProject.name = "icure-cli-public"
-include("lib")
-
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
@@ -22,4 +19,15 @@ dependencyResolutionManagement {
         maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://repo.spring.io/plugins-release") }
     }
+
+    versionCatalogs {
+        create("libs") {
+            from(files("./icure-cli/gradle/libs.versions.toml"))
+        }
+    }
 }
+
+
+rootProject.name = "icure-cli-public"
+include("lib")
+include("icure-cli")

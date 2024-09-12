@@ -7,8 +7,8 @@ import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.icure.cli.api.CliktConfig
 import com.icure.sdk.IcureBaseSdk
-import com.icure.sdk.api.BasicAuthenticationMethod
 import com.icure.sdk.auth.UsernamePassword
+import com.icure.sdk.options.AuthenticationMethod
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.time.delay
 import java.util.concurrent.CancellationException
@@ -24,7 +24,7 @@ class DesignDocInit: CliktCommand() {
 
     override fun run() {
         runBlocking {
-            val api = IcureBaseSdk.initialise(config.server, BasicAuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)))
+            val api = IcureBaseSdk.initialise(config.server, AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)))
 
             val groupApi = api.group
             val groups = groupApi.listGroups()
