@@ -27,6 +27,7 @@ class Api : CliktCommand() {
     init {
         this.subcommands(DeployCodes())
         this.subcommands(DesignDocInit())
+        this.subcommands(FixParents())
     }
 }
 

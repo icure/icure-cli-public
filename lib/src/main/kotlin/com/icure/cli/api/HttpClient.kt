@@ -15,7 +15,7 @@ fun getClient(credentials: String) = HttpClient(CIO) {
     }
 
     install(ContentNegotiation) {
-        json(Json { ignoreUnknownKeys = true })
+        json(Json { ignoreUnknownKeys = true; ; coerceInputValues = true })
     }
 
     install(HttpTimeout) {

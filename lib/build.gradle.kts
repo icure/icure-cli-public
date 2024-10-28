@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.com.github.ajalt.clikt)
     implementation(libs.org.jetbrains.kotlinx.serialization.json)
     implementation(libs.icure.sdk)
+    implementation(libs.xerces)
 }
 
 kotlin {

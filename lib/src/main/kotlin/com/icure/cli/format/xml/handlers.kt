@@ -3,12 +3,10 @@
 package com.icure.cli.format.xml
 
 import com.icure.sdk.model.Code
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.xml.sax.Attributes
 import org.xml.sax.helpers.DefaultHandler
 import java.util.Locale
-import kotlin.coroutines.CoroutineContext
 
 
 fun defaultHandler(type: String, persister: (code: Code) -> Unit) = object : DefaultHandler() {

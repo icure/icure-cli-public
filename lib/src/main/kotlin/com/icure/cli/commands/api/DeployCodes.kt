@@ -13,10 +13,15 @@ import com.icure.cli.format.xml.beThesaurusProcHandler
 import com.icure.cli.format.xml.defaultHandler
 import com.icure.cli.format.xml.iso6391Handler
 import com.icure.lib.deployCodes
-import com.icure.sdk.IcureSdk
+import com.icure.sdk.IcureBaseSdk
+import com.icure.sdk.auth.UsernamePassword
 import com.icure.sdk.model.Code
+import com.icure.sdk.options.AuthenticationMethod
+import com.icure.sdk.options.BasicApiOptions
 import com.icure.sdk.utils.Serialization
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import org.apache.xerces.jaxp.SAXParserFactoryImpl
 import java.io.File
 import java.util.LinkedList
 
@@ -34,6 +39,12 @@ class DeployCodes : CliktCommand("Deploy codes on all sub-groups available to th
 
     override fun run() {
         runBlocking {
+            val api = IcureBaseSdk.initialise(
+                config.server,
+                AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
+                options = BasicApiOptions(httpClient = config.client, httpClientJson = Json { ignoreUnknownKeys = true; coerceInputValues = true })
+            )
+
             val codes = xml?.let {
                 val codesType = type ?: path?.split(File.pathSeparator)?.last()?.split(".")?.first() ?: throw IllegalArgumentException("Specify type when choosing XML format")
                 val codes = LinkedList<Code>()
@@ -45,16 +56,14 @@ class DeployCodes : CliktCommand("Deploy codes on all sub-groups available to th
                         XmlFormat.thesaurusProc -> beThesaurusProcHandler(codesType) { codes.add(it) }
                     }
 
-                val parser = javax.xml.parsers.SAXParserFactory.newInstance().newSAXParser()
+                val parser = SAXParserFactoryImpl().newSAXParser()
                 parser.parse(path?.let { java.io.File(it) }?.inputStream() ?: System.`in`, handler)
 
                 codes
             } ?: Serialization.json.decodeFromString<List<Code>>(path?.let { java.io.File(it).readText() }
                 ?: System.`in`.bufferedReader().readText())
 
-            deployCodes(config.server, codes, config.username, config.password, local, regexFilter) { echo(it) }
-
-            IcureSdk.closeSharedClient()
+            deployCodes(api, codes, local, regexFilter) { echo(it) }
         }
     }
 }

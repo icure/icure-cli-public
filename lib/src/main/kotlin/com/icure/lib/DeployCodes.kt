@@ -6,12 +6,7 @@ import com.icure.sdk.model.Code
 import com.icure.sdk.options.AuthenticationMethod
 import kotlinx.coroutines.CancellationException
 
-suspend fun deployCodes(serverUrl: String, codes: List<Code>, userName: String, password: String, local: Boolean = false, regexFilter: String? = null, echo: (String) -> Unit = { println(it) }) {
-    val api = IcureBaseSdk.initialise(
-        serverUrl,
-        AuthenticationMethod.UsingCredentials(UsernamePassword(userName, password))
-    )
-
+suspend fun deployCodes(api: IcureBaseSdk, codes: List<Code>, local: Boolean = false, regexFilter: String? = null, echo: (String) -> Unit = { println(it) }) {
     val regex = regexFilter?.toRegex()
     val groupApi = api.group
     val codeApi = api.code
