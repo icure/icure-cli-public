@@ -70,7 +70,7 @@ fun defaultHandler(type: String, persister: (code: Code) -> Unit) = object : Def
                             version = code["version"] as String,
                             label = code["label"] as Map<String, String>,
                             regions = code["regions"] as Set<String>,
-                            qualifiedLinks = code["qualifiedLinks"] as Map<String, List<String>>
+                            qualifiedLinks = (code["qualifiedLinks"] ?: emptyMap<String,List<String>>()) as Map<String, List<String>>
                         )
                     )
                 }
