@@ -7,18 +7,18 @@ import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.icure.cardinal.sdk.CardinalBaseSdk
+import com.icure.cardinal.sdk.auth.UsernamePassword
+import com.icure.cardinal.sdk.model.Code
+import com.icure.cardinal.sdk.options.AuthenticationMethod
+import com.icure.cardinal.sdk.options.BasicSdkOptions
+import com.icure.cardinal.sdk.utils.Serialization
 import com.icure.cli.api.CliktConfig
 import com.icure.cli.format.xml.beThesaurusHandler
 import com.icure.cli.format.xml.beThesaurusProcHandler
 import com.icure.cli.format.xml.defaultHandler
 import com.icure.cli.format.xml.iso6391Handler
 import com.icure.lib.deployCodes
-import com.icure.sdk.IcureBaseSdk
-import com.icure.sdk.auth.UsernamePassword
-import com.icure.sdk.model.Code
-import com.icure.sdk.options.AuthenticationMethod
-import com.icure.sdk.options.BasicApiOptions
-import com.icure.sdk.utils.Serialization
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.apache.xerces.jaxp.SAXParserFactoryImpl
@@ -39,10 +39,11 @@ class DeployCodes : CliktCommand("Deploy codes on all sub-groups available to th
 
     override fun run() {
         runBlocking {
-            val api = IcureBaseSdk.initialise(
-                config.server,
-                AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
-                options = BasicApiOptions(httpClient = config.client, httpClientJson = Json { ignoreUnknownKeys = true; coerceInputValues = true })
+            val api = CardinalBaseSdk.initialize(
+                applicationId = null,
+                baseUrl = config.server,
+                authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
+                options = BasicSdkOptions(httpClient = config.client, httpClientJson = Json { ignoreUnknownKeys = true; coerceInputValues = true })
             )
 
             val codes = xml?.let {
@@ -57,10 +58,10 @@ class DeployCodes : CliktCommand("Deploy codes on all sub-groups available to th
                     }
 
                 val parser = SAXParserFactoryImpl().newSAXParser()
-                parser.parse(path?.let { java.io.File(it) }?.inputStream() ?: System.`in`, handler)
+                parser.parse(path?.let { File(it) }?.inputStream() ?: System.`in`, handler)
 
                 codes
-            } ?: Serialization.json.decodeFromString<List<Code>>(path?.let { java.io.File(it).readText() }
+            } ?: Serialization.json.decodeFromString<List<Code>>(path?.let { File(it).readText() }
                 ?: System.`in`.bufferedReader().readText())
 
             deployCodes(api, codes, local, regexFilter) { echo(it) }

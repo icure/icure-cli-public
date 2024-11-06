@@ -28,6 +28,8 @@ class Api : CliktCommand() {
         this.subcommands(DeployCodes())
         this.subcommands(DesignDocInit())
         this.subcommands(FixParents())
+        this.subcommands(Patch())
+        this.subcommands(ValorisationPatch())
     }
 }
 

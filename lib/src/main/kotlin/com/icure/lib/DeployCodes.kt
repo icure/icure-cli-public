@@ -1,12 +1,10 @@
 package com.icure.lib
 
-import com.icure.sdk.IcureBaseSdk
-import com.icure.sdk.auth.UsernamePassword
-import com.icure.sdk.model.Code
-import com.icure.sdk.options.AuthenticationMethod
+import com.icure.cardinal.sdk.CardinalBaseSdk
+import com.icure.cardinal.sdk.model.Code
 import kotlinx.coroutines.CancellationException
 
-suspend fun deployCodes(api: IcureBaseSdk, codes: List<Code>, local: Boolean = false, regexFilter: String? = null, echo: (String) -> Unit = { println(it) }) {
+suspend fun deployCodes(api: CardinalBaseSdk, codes: List<Code>, local: Boolean = false, regexFilter: String? = null, echo: (String) -> Unit = { println(it) }) {
     val regex = regexFilter?.toRegex()
     val groupApi = api.group
     val codeApi = api.code

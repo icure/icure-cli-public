@@ -5,12 +5,16 @@ import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.default
+import com.icure.cardinal.sdk.CardinalBaseSdk
+import com.icure.cardinal.sdk.auth.UsernamePassword
+import com.icure.cardinal.sdk.options.AuthenticationMethod
+import com.icure.cardinal.sdk.options.BasicSdkOptions
+import com.icure.cardinal.sdk.options.SdkOptions
+import com.icure.cardinal.sdk.storage.impl.FileStorageFacade
 import com.icure.cli.api.CliktConfig
-import com.icure.sdk.IcureBaseSdk
-import com.icure.sdk.auth.UsernamePassword
-import com.icure.sdk.options.AuthenticationMethod
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.time.delay
+import kotlinx.serialization.json.Json
 import java.util.concurrent.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -24,7 +28,13 @@ class DesignDocInit: CliktCommand() {
 
     override fun run() {
         runBlocking {
-            val api = IcureBaseSdk.initialise(config.server, AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)))
+            val api = CardinalBaseSdk.initialize(
+                applicationId = null,
+                baseUrl = config.server,
+                authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
+                options = BasicSdkOptions(httpClient = config.client, httpClientJson = Json { ignoreUnknownKeys = true; coerceInputValues = true })
+            )
+
 
             val groupApi = api.group
             val groups = groupApi.listGroups()

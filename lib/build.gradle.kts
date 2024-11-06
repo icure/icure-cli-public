@@ -24,11 +24,14 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
 
+    // Use the Kotlin JDK 8 standard library.
+    implementation(libs.org.jetbrains.kotlinx.coroutines.core)
     implementation(libs.bundles.io.ktor)
     implementation(libs.com.github.ajalt.clikt)
     implementation(libs.org.jetbrains.kotlinx.serialization.json)
     implementation(libs.icure.sdk)
     implementation(libs.xerces)
+    implementation(libs.io.github.reidsync.kotlin.json.patch)
 }
 
 kotlin {

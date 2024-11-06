@@ -1,20 +1,16 @@
 package com.icure.lib
 
-import com.icure.sdk.IcureBaseSdk
-import com.icure.sdk.auth.UsernamePassword
-import com.icure.sdk.model.Code
-import com.icure.sdk.options.AuthenticationMethod
-import com.icure.sdk.options.BasicApiOptions
+import com.icure.cardinal.sdk.CardinalBaseSdk
 import kotlinx.coroutines.CancellationException
 
-suspend fun fixParents(api: IcureBaseSdk, local: Boolean = false, regexFilter: String? = null, echo: (String) -> Unit = { println(it) }) {
+suspend fun fixParents(api: CardinalBaseSdk, local: Boolean = false, regexFilter: String? = null, echo: (String) -> Unit = { println(it) }) {
     val regex = regexFilter?.toRegex()
     val groupApi = api.group
     val userApi = api.user
     val hcpApi = api.healthcareParty
     val groups = if (!local) groupApi.listGroups().filter { regex == null || regex.matches(it.id) }.map { it.id } else listOf(api.user.getCurrentUser().groupId!!)
 
-    groups.reversed().forEach { groupId ->
+    groups.forEach { groupId ->
         try {
             echo("Checking group $groupId")
             val users = userApi.listUsersInGroup(groupId, limit = 1000).rows

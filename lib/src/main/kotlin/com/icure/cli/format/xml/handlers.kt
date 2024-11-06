@@ -2,7 +2,7 @@
 
 package com.icure.cli.format.xml
 
-import com.icure.sdk.model.Code
+import com.icure.cardinal.sdk.model.Code
 import kotlinx.coroutines.runBlocking
 import org.xml.sax.Attributes
 import org.xml.sax.helpers.DefaultHandler
@@ -67,6 +67,7 @@ fun defaultHandler(type: String, persister: (code: Code) -> Unit) = object : Def
                         Code(
                             id = code["id"] as String,
                             type = code["type"] as String,
+                            code = code["code"] as String,
                             version = code["version"] as String,
                             label = code["label"] as Map<String, String>,
                             regions = code["regions"] as Set<String>,
@@ -112,6 +113,7 @@ fun beThesaurusHandler(type: String, persister: (code: Code) -> Unit) = object :
                         "label" to mutableMapOf<String, String>(),
                         "searchTerms" to mutableMapOf<String, Set<String>>(),
                         "links" to mutableSetOf<String>(),
+                        "qualifiedLinks" to mutableMapOf<String, List<String>>().apply { put("icd10", emptyList()) },
                         "regions" to setOf<String>()
                     )
                 }
@@ -125,6 +127,7 @@ fun beThesaurusHandler(type: String, persister: (code: Code) -> Unit) = object :
                 "ICD_10_CODE_1", "ICD_10_CODE_1X", "ICD_10_CODE_1Y",
                 "ICD_10_CODE_2", "ICD_10_CODE_2X", "ICD_10_CODE_2Y" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) code["links"] = (code["links"] as Set<*>) + ("ICD|$ch|10")
+                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("ICD|$ch|10")
                 }
 
                 "FR_CLINICAL_LABEL" -> charsHandler = { ch ->
@@ -170,10 +173,11 @@ fun beThesaurusHandler(type: String, persister: (code: Code) -> Unit) = object :
                         Code(
                             id = code["id"] as String,
                             type = code["type"] as String,
+                            code = code["code"] as String,
                             version = code["version"] as String,
                             label = code["label"] as Map<String, String>,
                             regions = code["regions"] as Set<String>,
-                            qualifiedLinks = code["qualifiedLinks"] as Map<String, List<String>>
+                            qualifiedLinks = (code["qualifiedLinks"] ?: emptyMap<String, List<String>>()) as Map<String, List<String>>
                         )
                     )
                 }
@@ -214,6 +218,7 @@ fun beThesaurusProcHandler(type: String, persister: (code: Code) -> Unit) = obje
                         "version" to version,
                         "label" to mutableMapOf<String, String>(),
                         "searchTerms" to mutableMapOf<String, Set<String>>(),
+                        "qualifiedLinks" to mutableMapOf<String, List<String>>().apply { put("ibui", emptyList()) },
                         "regions" to setOf<String>()
                     )
                 }
@@ -221,11 +226,14 @@ fun beThesaurusProcHandler(type: String, persister: (code: Code) -> Unit) = obje
                 "CISP" -> charsHandler = { ch -> code["code"] = ch }
                 "IBUI" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) code["links"] = setOf("BE-THESAURUS|$ch|$version")
+                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("BE-THESAURUS|$ch|$version")
                 }
 
                 "IBUI_NOT_EXACT" -> charsHandler = { ch ->
-                    if (ch.isNotBlank() && !code.containsKey("links"))
+                    if (ch.isNotBlank() && !code.containsKey("links")) {
                         code["links"] = setOf("BE-THESAURUS|$ch|$version")
+                        (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("BE-THESAURUS|$ch|$version")
+                    }
                 }
 
                 "LABEL_FR" -> charsHandler = { ch ->
@@ -266,10 +274,13 @@ fun beThesaurusProcHandler(type: String, persister: (code: Code) -> Unit) = obje
                         Code(
                             id = code["id"] as String,
                             type = code["type"] as String,
+                            code = code["code"] as String,
                             version = code["version"] as String,
                             label = code["label"] as Map<String, String>,
                             regions = code["regions"] as Set<String>,
-                            qualifiedLinks = code["qualifiedLinks"] as Map<String, List<String>>
+                            searchTerms = (code["searchTerms"]?: emptyMap<String, List<String>>()) as Map<String, Set<String>>,
+                            links = (code["links"] ?: emptySet<String>()) as Set<String>,
+                            qualifiedLinks = (code["qualifiedLinks"] ?: emptyMap<String, List<String>>()) as Map<String, List<String>>
                         )
                     )
                 }
