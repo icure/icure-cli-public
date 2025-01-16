@@ -8,9 +8,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.icure.cli.api.CliktConfig
 import com.icure.cli.api.getClient
-import kotlinx.serialization.ExperimentalSerializationApi
 
-@OptIn(ExperimentalSerializationApi::class)
 class Api : CliktCommand() {
     private val credentials by option("-u", "--credentials", help = "Credentials").required()
     private val server by option("-s", "--server", help = "Couchdb server URL").default("https://api.icure.cloud")
