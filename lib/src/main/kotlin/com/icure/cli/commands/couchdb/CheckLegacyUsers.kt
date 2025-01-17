@@ -24,6 +24,7 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 			}
 			val missingEntities = mutableSetOf<String>()
 			val hcpsById = mutableMapOf<String, HcpStub>()
+			val parentsOfUsersHcps = mutableSetOf<String>()
 
 			suspend fun getHcp(hcpId: String): HcpStub? =
 				hcpsById[hcpId] ?:
@@ -59,6 +60,9 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 
 					(user.healthcarePartyId?.let { hcpId ->
 						val hcp = getHcp(hcpId)
+						hcp?.parentId?.also { parentId ->
+							parentsOfUsersHcps.add(parentId)
+						}
 						if (hcp == null) {
 							UserReport(
 								autoDelegationsToMissingHcp = autoDelegationsToMissingHcp,
@@ -98,6 +102,9 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 				if (report.hasMissingParent) {
 					echo("Hcp ${hcp.id} parent (${hcp.parentId}) does not exist or is deleted")
 				}
+			}
+			if (parentsOfUsersHcps.size > 1) {
+				echo("There is more than one parent for the users' hcp: ${parentsOfUsersHcps.joinToString(", ")}")
 			}
 		}
 	}
