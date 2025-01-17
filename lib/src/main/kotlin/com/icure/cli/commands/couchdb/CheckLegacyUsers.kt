@@ -60,8 +60,8 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 
 					(user.healthcarePartyId?.let { hcpId ->
 						val hcp = getHcp(hcpId)
-						hcp?.parentId?.also { parentId ->
-							parentsOfUsersHcps.add(parentId)
+						hcp?.also {
+							parentsOfUsersHcps.add(it.parentId ?: "null")
 						}
 						if (hcp == null) {
 							UserReport(
