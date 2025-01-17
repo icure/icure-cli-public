@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "2.0.20"
     kotlin("plugin.serialization") version "1.9.21"
 
     // Apply the java-library plugin for API and implementation separation.
@@ -49,7 +49,7 @@ tasks.jar {
             mapOf(
                 "Implementation-Title" to rootProject.name,
                 "Implementation-Version" to project.version,
-                "Root-Commands" to "com.icure.cli.commands.api.Api",
+                "Root-Commands" to "com.icure.cli.commands.api.Api,com.icure.cli.commands.couchdb.CouchDb",
             )
         )
     }
