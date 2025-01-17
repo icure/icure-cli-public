@@ -20,7 +20,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
-class DesignDocInit: CliktCommand() {
+class DesignDocInit: CliktCommand(help = "Updates the design documents for a group") {
     private val config by requireObject<CliktConfig>()
     private val entity: String by argument(help = "The entity to create for which the design document will be created (Code, Patient, …)")
     private val warmup: Boolean by argument(help = "Force immediate warmup of the design document (true/false)").convert { it.toBoolean() }.default(false)

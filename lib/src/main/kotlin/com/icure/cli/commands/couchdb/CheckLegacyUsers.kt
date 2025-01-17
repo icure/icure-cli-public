@@ -12,7 +12,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank") {
+class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users that will not work with the v8 constraints") {
 	private val config by requireObject<CliktConfig>()
 	private val group by option("--group", help = "The group id").required()
 
