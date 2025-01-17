@@ -52,8 +52,8 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 					it.deletionDate == null
 						&& it.status?.lowercase() == "active"
 				}.associateWith { user ->
-					val autoDelegations = user.autoDelegations["all"] ?: emptySet()
-					val missingAutoDelegations = autoDelegations.filter {
+					val autoDelegations = user.autoDelegations.values.flatten().toSet()
+					val autoDelegationsToMissingHcp = autoDelegations.filter {
 						getHcp(it) == null
 					}.toSet()
 
@@ -61,18 +61,18 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 						val hcp = getHcp(hcpId)
 						if (hcp == null) {
 							UserReport(
-								missingAutoDelegations = missingAutoDelegations,
+								autoDelegationsToMissingHcp = autoDelegationsToMissingHcp,
 								hasMissingHcp = hcpId
 							)
 						} else if (autoDelegations.size > 1 && hcp.parentId != null && autoDelegations.contains(hcp.parentId)) {
 							UserReport(
-								missingAutoDelegations = missingAutoDelegations,
+								autoDelegationsToMissingHcp = autoDelegationsToMissingHcp,
 								hasAutoDelegationsAndParent = true
 							)
 						} else {
-							UserReport(missingAutoDelegations)
+							UserReport(autoDelegationsToMissingHcp)
 						}
-					} ?: UserReport(missingAutoDelegations))
+					} ?: UserReport(autoDelegationsToMissingHcp))
 				}
 			val hcpReport = hcpsById.values.associateWith { hcp ->
 				HcpReport(
@@ -81,8 +81,8 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 				)
 			}
 			usersReport.forEach { (user, report) ->
-				if (report.missingAutoDelegations.isNotEmpty()) {
-					echo("User ${user.id} has auto-delegations for non-existing hcps: ${report.missingAutoDelegations.joinToString(", ")}")
+				if (report.autoDelegationsToMissingHcp.isNotEmpty()) {
+					echo("User ${user.id} has auto-delegations for non-existing hcps: ${report.autoDelegationsToMissingHcp.joinToString(", ")}")
 				}
 				if (report.hasMissingHcp != null) {
 					echo("User ${user.id} healthcare party (${report.hasMissingHcp}) does not exist or is deleted")
@@ -108,7 +108,7 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 	)
 
 	data class UserReport(
-		val missingAutoDelegations: Set<String>,
+		val autoDelegationsToMissingHcp: Set<String>,
 		val hasMissingHcp: String? = null,
 		val hasAutoDelegationsAndParent: Boolean = false
 	)
