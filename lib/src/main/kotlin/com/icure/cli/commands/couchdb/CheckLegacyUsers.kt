@@ -19,11 +19,9 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 	override fun run() {
 		runBlocking {
 			val db = "icure-$group-base"
-			val cluster = listOf("couch-cluster-01", "couch-cluster-02").firstOrNull {
-				config.client.get("https://$it.icure.cloud/$db").let {
-					it.status.isSuccess()
-				}
-			} ?: throw IllegalStateException("Cannot find group $group on either cluster")
+			if (!config.client.get("${config.server}/$db").status.isSuccess() ) {
+				throw IllegalStateException("Cannot find group $group on ${config.server}")
+			}
 			val missingEntities = mutableSetOf<String>()
 			val hcpsById = mutableMapOf<String, HcpStub>()
 
@@ -32,7 +30,7 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 					if (missingEntities.contains(hcpId)) null
 					else config.client.get {
 						url {
-							takeFrom("https://$cluster.icure.cloud")
+							takeFrom(config.server)
 							appendPathSegments(db, hcpId)
 						}
 					}.let {
@@ -48,7 +46,7 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 
 
 			val usersReport =
-				config.client.get("https://$cluster.icure.cloud/$db/_design/User/_view/all?include_docs=true").body<Row<UserStub>>().rows.map {
+				config.client.get("${config.server}/$db/_design/User/_view/all?include_docs=true").body<Row<UserStub>>().rows.map {
 					it.doc
 				}.filter {
 					it.deletionDate == null
