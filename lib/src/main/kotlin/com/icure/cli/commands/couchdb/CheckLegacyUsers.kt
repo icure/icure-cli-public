@@ -26,30 +26,47 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 			} ?: throw IllegalStateException("Cannot find group $group on either cluster")
 			val missingEntities = mutableSetOf<String>()
 			val hcpsById = mutableMapOf<String, HcpStub>()
+
+			suspend fun getHcp(hcpId: String): HcpStub? =
+				hcpsById[hcpId] ?:
+					if (missingEntities.contains(hcpId)) null
+					else config.client.get {
+						url {
+							takeFrom("https://$cluster.icure.cloud")
+							appendPathSegments(db, hcpId)
+						}
+					}.let {
+						when {
+							it.status.isSuccess() -> it.body<HcpStub>().also { hcp -> hcpsById[hcp.id] = hcp }
+							it.status.value == 404 -> {
+								missingEntities.add(hcpId)
+								null
+							}
+							else -> throw IllegalStateException("Cannot get hcp $hcpId: ${it.status.value}")
+						}
+					}
+
+
 			val usersReport =
 				config.client.get("https://$cluster.icure.cloud/$db/_design/User/_view/all?include_docs=true").body<Row<UserStub>>().rows.map {
 					it.doc
 				}.filter {
-					it.deletionDate == null && it.status?.lowercase() == "active"
+					it.deletionDate == null
+						&& it.status?.lowercase() == "active"
 				}.associateWith { user ->
-					val missingAutoDelegations = user.autoDelegations["all"]?.filter {
-						missingEntities.contains(it)
-							|| config.client.get("https://$cluster.icure.cloud/$db/$it").status.value == 404
-					}?.toSet() ?: emptySet()
-					missingEntities.addAll(missingAutoDelegations)
+					val autoDelegations = user.autoDelegations["all"] ?: emptySet()
+					val missingAutoDelegations = autoDelegations.filter {
+						getHcp(it) == null
+					}.toSet()
 
 					(user.healthcarePartyId?.let { hcpId ->
-						val hcp = config.client.get("https://$cluster.icure.cloud/$db/$hcpId").takeIf {
-							it.status.isSuccess()
-						}?.body<HcpStub>()?.also {
-							hcpsById[it.id] = it
-						}
+						val hcp = getHcp(hcpId)
 						if (hcp == null) {
 							UserReport(
 								missingAutoDelegations = missingAutoDelegations,
-								hasMissingHcp = true
+								hasMissingHcp = hcpId
 							)
-						} else if (missingAutoDelegations.isNotEmpty() && hcp.parentId != null) {
+						} else if (autoDelegations.size > 1 && hcp.parentId != null && autoDelegations.contains(hcp.parentId)) {
 							UserReport(
 								missingAutoDelegations = missingAutoDelegations,
 								hasAutoDelegationsAndParent = true
@@ -61,31 +78,27 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 				}
 			val hcpReport = hcpsById.values.associateWith { hcp ->
 				HcpReport(
-					hasEmptyPublicKey = hcp.publicKey?.isBlank() == true,
-					hasMissingParent = hcp.parentId != null && config.client.get("https://$cluster.icure.cloud/$db/${hcp.parentId}").status.isSuccess(),
+					hasEmptyPublicKey = hcp.publicKey.isNullOrBlank(),
+					hasMissingParent = hcp.parentId != null && getHcp(hcp.parentId) == null,
 				)
 			}
 			usersReport.forEach { (user, report) ->
-				if (report.toLog) {
-					if (report.missingAutoDelegations.isNotEmpty()) {
-						echo("User ${user.id} has auto-delegations for non-existing users: ${report.missingAutoDelegations.joinToString(", ")}")
-					}
-					if (report.hasMissingHcp) {
-						echo("User ${user.id} healthcare party does not exist or is deleted")
-					}
-					if (report.hasAutoDelegationsAndParent) {
-						echo("User ${user.id} has auto-delegations but the related hcp (${user.healthcarePartyId}) has a parent")
-					}
+				if (report.missingAutoDelegations.isNotEmpty()) {
+					echo("User ${user.id} has auto-delegations for non-existing hcps: ${report.missingAutoDelegations.joinToString(", ")}")
+				}
+				if (report.hasMissingHcp != null) {
+					echo("User ${user.id} healthcare party (${report.hasMissingHcp}) does not exist or is deleted")
+				}
+				if (report.hasAutoDelegationsAndParent) {
+					echo("User ${user.id} hcp (${user.healthcarePartyId}) has a parent and an auto-delegation for the parent, but also other auto-delegations")
 				}
 			}
 			hcpReport.forEach { (hcp, report) ->
-				if (report.toLog) {
-					if (report.hasEmptyPublicKey) {
-						echo("Hcp ${hcp.id} has an empty public key")
-					}
-					if (report.hasMissingParent) {
-						echo("Hcp ${hcp.id} parent (${hcp.parentId}) does not exist or is deleted")
-					}
+				if (report.hasEmptyPublicKey) {
+					echo("Hcp ${hcp.id} has an empty public key")
+				}
+				if (report.hasMissingParent) {
+					echo("Hcp ${hcp.id} parent (${hcp.parentId}) does not exist or is deleted")
 				}
 			}
 		}
@@ -94,19 +107,13 @@ class CheckLegacyUsers : CliktCommand("Set parent to undefined when it is blank"
 	data class HcpReport(
 		val hasEmptyPublicKey: Boolean,
 		val hasMissingParent: Boolean
-	) {
-		val toLog = hasEmptyPublicKey && hasMissingParent
-	}
+	)
 
 	data class UserReport(
 		val missingAutoDelegations: Set<String>,
-		val hasMissingHcp: Boolean = false,
+		val hasMissingHcp: String? = null,
 		val hasAutoDelegationsAndParent: Boolean = false
-	) {
-		val toLog = hasMissingHcp
-			|| hasAutoDelegationsAndParent
-			|| missingAutoDelegations.isNotEmpty()
-	}
+	)
 
 	@Serializable
 	data class Row<T>(
