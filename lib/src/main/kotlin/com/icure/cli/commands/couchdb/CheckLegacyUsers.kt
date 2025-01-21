@@ -45,6 +45,13 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 						}
 					}
 
+			suspend fun hasCycleInParentHierarchy(hcp: HcpStub, visited: List<String> = emptyList()): Boolean = when {
+				visited.contains(hcp.id) -> true
+				hcp.parentId == null -> true
+				else -> getHcp(hcp.parentId)?.let { parent ->
+					hasCycleInParentHierarchy(parent, visited + hcp.id)
+				} ?: false
+			}
 
 			val usersReport =
 				config.client.get("${config.server}/$db/_design/User/_view/all?include_docs=true").body<Row<UserStub>>().rows.map {
@@ -82,6 +89,7 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 				HcpReport(
 					hasEmptyPublicKey = hcp.publicKey.isNullOrBlank(),
 					hasMissingParent = hcp.parentId != null && getHcp(hcp.parentId) == null,
+					hasCycleInParentHierarchy = hasCycleInParentHierarchy(hcp)
 				)
 			}
 			usersReport.forEach { (user, report) ->
@@ -102,6 +110,9 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 				if (report.hasMissingParent) {
 					echo("Hcp ${hcp.id} parent (${hcp.parentId}) does not exist or is deleted")
 				}
+				if (report.hasMissingParent) {
+					echo("Hcp ${hcp.id} has a cycle in his hierarchy of parents")
+				}
 			}
 			if (parentsOfUsersHcps.size > 1) {
 				echo("There is more than one parent for the users' hcp: ${parentsOfUsersHcps.joinToString(", ")}")
@@ -111,7 +122,8 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 
 	data class HcpReport(
 		val hasEmptyPublicKey: Boolean,
-		val hasMissingParent: Boolean
+		val hasMissingParent: Boolean,
+		val hasCycleInParentHierarchy: Boolean
 	)
 
 	data class UserReport(
