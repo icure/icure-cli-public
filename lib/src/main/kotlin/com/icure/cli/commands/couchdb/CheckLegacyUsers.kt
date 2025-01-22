@@ -25,6 +25,7 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 			val missingEntities = mutableSetOf<String>()
 			val hcpsById = mutableMapOf<String, HcpStub>()
 			val parentsOfUsersHcps = mutableSetOf<String>()
+			val hcpsWithNullParent = mutableSetOf<String>()
 
 			suspend fun getHcp(hcpId: String): HcpStub? =
 				hcpsById[hcpId] ?:
@@ -68,7 +69,11 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 					(user.healthcarePartyId?.let { hcpId ->
 						val hcp = getHcp(hcpId)
 						hcp?.also {
-							parentsOfUsersHcps.add(it.parentId ?: "null")
+							if (it.parentId != null) {
+								parentsOfUsersHcps.add(it.parentId)
+							} else {
+								hcpsWithNullParent.add(hcpId)
+							}
 						}
 						if (hcp == null) {
 							UserReport(
@@ -115,7 +120,10 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 				}
 			}
 			if (parentsOfUsersHcps.size > 1) {
-				echo("There is more than one parent for the users' hcp: ${parentsOfUsersHcps.joinToString(", ")}")
+				echo("There are multiple hcps that are parents of other hcps in this group: ${parentsOfUsersHcps.joinToString(", ")}")
+			}
+			if (parentsOfUsersHcps.size == 1 && hcpsWithNullParent.size > 1) {
+				echo("There are hcps with a null parent in the group, even if a parent hcp is present in the group ${(hcpsWithNullParent - parentsOfUsersHcps).joinToString(", ")}")
 			}
 		}
 	}
