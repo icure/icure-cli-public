@@ -63,7 +63,7 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 				}.associateWith { user ->
 					val autoDelegations = user.autoDelegations.values.flatten().toSet()
 					val autoDelegationsToMissingHcp = autoDelegations.filter {
-						getHcp(it) == null
+						getHcp(it) == null || getHcp(it)?.deletionDate != null
 					}.toSet()
 
 					(user.healthcarePartyId?.let { hcpId ->
@@ -99,7 +99,7 @@ class CheckLegacyUsers : CliktCommand("Checks if in a group there are some users
 			}
 			usersReport.forEach { (user, report) ->
 				if (report.autoDelegationsToMissingHcp.isNotEmpty()) {
-					echo("User ${user.id} has auto-delegations for non-existing hcps: ${report.autoDelegationsToMissingHcp.joinToString(", ")}")
+					echo("User ${user.id} has auto-delegations for non-existing or deleted hcps: ${report.autoDelegationsToMissingHcp.joinToString(", ")}")
 				}
 				if (report.hasMissingHcp != null) {
 					echo("User ${user.id} healthcare party (${report.hasMissingHcp}) does not exist or is deleted")
