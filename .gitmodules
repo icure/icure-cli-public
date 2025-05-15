@@ -1,3 +1,6 @@
 [submodule "icure-cli"]
 	path = icure-cli
 	url = git@github.com:icure/icure-cli.git
+[submodule "icure-pre-commit"]
+	path = icure-pre-commit
+	url = ../icure-pre-commit
