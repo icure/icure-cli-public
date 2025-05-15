@@ -16,7 +16,6 @@ class Api : CliktCommand() {
     private val config by findOrSetObject { CliktConfig() }
 
     override fun run() {
-        config.client = getClient(credentials)
         config.server = server
         config.username = credentials.substringBefore(":")
         config.password = credentials.substringAfter(":")
@@ -28,6 +27,7 @@ class Api : CliktCommand() {
         this.subcommands(FixParents())
         this.subcommands(Patch())
         this.subcommands(ValorisationPatch())
+        this.subcommands(TransferGroup())
     }
 }
 

@@ -19,6 +19,7 @@ import com.icure.cli.format.xml.beThesaurusProcHandler
 import com.icure.cli.format.xml.defaultHandler
 import com.icure.cli.format.xml.iso6391Handler
 import com.icure.lib.deployCodes
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.apache.xerces.jaxp.SAXParserFactoryImpl
@@ -43,7 +44,7 @@ class DeployCodes : CliktCommand("Deploy codes on all sub-groups available to th
                 applicationId = null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
-                options = BasicSdkOptions(httpClient = config.client, httpClientJson = Json { ignoreUnknownKeys = true; coerceInputValues = true })
+                options = BasicSdkOptions(lenientJson = true),
             )
 
             val codes = xml?.let {

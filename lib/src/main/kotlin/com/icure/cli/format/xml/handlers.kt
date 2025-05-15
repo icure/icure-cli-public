@@ -113,7 +113,7 @@ fun beThesaurusHandler(type: String, persister: (code: Code) -> Unit) = object :
                         "label" to mutableMapOf<String, String>(),
                         "searchTerms" to mutableMapOf<String, Set<String>>(),
                         "links" to mutableSetOf<String>(),
-                        "qualifiedLinks" to mutableMapOf<String, List<String>>().apply { put("icd10", emptyList()) },
+                        "qualifiedLinks" to mutableMapOf<String, List<String>>(),
                         "regions" to setOf<String>()
                     )
                 }
@@ -122,6 +122,7 @@ fun beThesaurusHandler(type: String, persister: (code: Code) -> Unit) = object :
                 "ICPC_2_CODE_1", "ICPC_2_CODE_1X", "ICPC_2_CODE_1Y",
                 "ICPC_2_CODE_2", "ICPC_2_CODE_2X", "ICPC_2_CODE_2Y" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) code["links"] = (code["links"] as Set<*>) + ("ICPC|$ch|2")
+                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icpc2"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icpc2"] ?: emptyList()) + ("ICPC|$ch|2")
                 }
 
                 "ICD_10_CODE_1", "ICD_10_CODE_1X", "ICD_10_CODE_1Y",
@@ -177,6 +178,7 @@ fun beThesaurusHandler(type: String, persister: (code: Code) -> Unit) = object :
                             version = code["version"] as String,
                             label = code["label"] as Map<String, String>,
                             regions = code["regions"] as Set<String>,
+                            links = (code["links"] ?: emptySet<String>()) as Set<String>,
                             qualifiedLinks = (code["qualifiedLinks"] ?: emptyMap<String, List<String>>()) as Map<String, List<String>>
                         )
                     )

@@ -2,14 +2,9 @@ package com.icure.cli.commands.api
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.requireObject
-import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.multiple
-import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.split
 import com.icure.cardinal.sdk.CardinalBaseSdk
 import com.icure.cardinal.sdk.auth.UsernamePassword
 import com.icure.cardinal.sdk.options.AuthenticationMethod
@@ -17,33 +12,35 @@ import com.icure.cardinal.sdk.options.BasicSdkOptions
 import com.icure.cardinal.sdk.options.SdkOptions
 import com.icure.cardinal.sdk.storage.impl.FileStorageFacade
 import com.icure.cli.api.CliktConfig
-import com.icure.lib.patch
-import com.icure.lib.valorisationPatch
+import com.icure.lib.fixParents
+import com.icure.lib.transferGroup
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 
 
-class ValorisationPatch : CliktCommand("Patch the valorisation of a tarification") {
+class TransferGroup : CliktCommand("Set parent to undefined when it is blank") {
     private val config by requireObject<CliktConfig>()
-    private val regexFilter by option("--regex", help = "Filter group ids by regex")
-    private val local by option("--local", help = "Inject in user's database instead of in all subGroups").flag("-l")
-    private val ids by option("--ids", help = "The ids of the entities to patch separated by comma").split(",")
-        .default(emptyList())
-    private val ref by option("--ref", help = "The ref of the valorisation to patch").required()
-    private val predicate by option("--predicate", help = "The new predicate").required()
+    private val sourceCredentials by option("-c", "--source-credentials", help = "The credentials to use on the source side").required()
+    private val group by option("-g", "--group", help = "The group to move").required()
+    private val destination by option("-d", "--destination", help = "The destination parent group").required()
 
     override fun run() {
         runBlocking {
-            val api = CardinalBaseSdk.initialize(
+            val destinationApi = CardinalBaseSdk.initialize(
                 applicationId = null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
                 options = BasicSdkOptions(lenientJson = true)
             )
 
-            valorisationPatch(api, ids, ref, predicate, local, regexFilter) { echo(it) }
+            val sourceApi = CardinalBaseSdk.initialize(
+                applicationId = null,
+                baseUrl = config.server,
+                authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(sourceCredentials.split(':').first(), sourceCredentials.split(':').drop(1).joinToString(":"))),
+                options = BasicSdkOptions(lenientJson = true)
+            )
+
+            transferGroup(destinationApi, sourceApi, group, destination) { echo(it) }
         }
     }
 }
-
-
