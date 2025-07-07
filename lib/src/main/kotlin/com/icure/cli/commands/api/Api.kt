@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.icure.cli.api.CliktConfig
-import com.icure.cli.api.getClient
+import kotlinx.serialization.ExperimentalSerializationApi
 
 class Api : CliktCommand() {
     private val credentials by option("-u", "--credentials", help = "Credentials").required()
@@ -23,6 +23,7 @@ class Api : CliktCommand() {
 
     init {
         this.subcommands(DeployCodes())
+        this.subcommands(DeployInsurances())
         this.subcommands(DesignDocInit())
         this.subcommands(FixParents())
         this.subcommands(Patch())
@@ -30,4 +31,3 @@ class Api : CliktCommand() {
         this.subcommands(TransferGroup())
     }
 }
-

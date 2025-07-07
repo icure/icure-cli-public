@@ -14,20 +14,17 @@ suspend fun deployInsurances(api: CardinalBaseSdk, insurances: List<Insurance>, 
         try {
             echo("Importing into group $groupId")
             val existingInsurances =
-                (if (!local) insuranceApi.getInsurances(groupId, insurances.map { c -> c.id }) else insuranceApi.getInsurances(insurances.map { c -> c.id })).associateBy { c -> c.id }
+                (if (!local) insuranceApi.getInsurancesInGroup(groupId,
+                    insurances.joinToString(",") { c -> c.id }) else insuranceApi.getInsurances(insurances.map { c -> c.id })).associateBy { c -> c.id }
             val insurancesToAdd = insurances.filter { insurance -> !existingInsurances.containsKey(insurance.id) }
             val insurancesToUpdate = insurances.filter { insurance -> existingInsurances.containsKey(insurance.id) }
                 .map { insurance -> insurance.copy(rev = existingInsurances[insurance.id]?.rev) }
 
             insurancesToAdd.chunked(100).forEach { chunk ->
-                if (!local) {
-                    insuranceApi.createInsurances(groupId, chunk)
-                } else {
-                    insuranceApi.createInsurances(chunk)
-                }
+                insuranceApi.createInsurancesInGroup(groupId, chunk)
             }
             insurancesToUpdate.chunked(100).forEach { chunk ->
-                if (!local) insuranceApi.modifyInsurances(groupId, chunk) else insuranceApi.modifyInsurances(chunk)
+                insuranceApi.modifyInsurancesInGroup(groupId, chunk)
             }
             echo("Created ${insurancesToAdd.size} and updated ${insurancesToUpdate.size} insurances into group $groupId")
         } catch (e: CancellationException) {

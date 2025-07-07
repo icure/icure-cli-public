@@ -19,9 +19,7 @@ import com.icure.cli.format.xml.beThesaurusProcHandler
 import com.icure.cli.format.xml.defaultHandler
 import com.icure.cli.format.xml.iso6391Handler
 import com.icure.lib.deployCodes
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
 import org.apache.xerces.jaxp.SAXParserFactoryImpl
 import java.io.File
 import java.util.LinkedList
