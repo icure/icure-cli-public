@@ -13,9 +13,10 @@ suspend fun deployInsurances(api: CardinalBaseSdk, insurances: List<Insurance>, 
     groups.forEach { groupId ->
         try {
             echo("Importing into group $groupId")
-            val existingInsurances =
-                (if (!local) insuranceApi.getInsurancesInGroup(groupId,
-                    insurances.joinToString(",") { c -> c.id }) else insuranceApi.getInsurances(insurances.map { c -> c.id })).associateBy { c -> c.id }
+            val existingInsurances = (
+                if (!local) insuranceApi.getInsurancesInGroup(groupId, insurances.map { it.id })
+                else insuranceApi.getInsurances(insurances.map { c -> c.id })
+            ).associateBy { c -> c.id }
             val insurancesToAdd = insurances.filter { insurance -> !existingInsurances.containsKey(insurance.id) }
             val insurancesToUpdate = insurances.filter { insurance -> existingInsurances.containsKey(insurance.id) }
                 .map { insurance -> insurance.copy(rev = existingInsurances[insurance.id]?.rev) }

@@ -31,7 +31,7 @@ class Patch : CliktCommand("Patch entities") {
     override fun run() {
         runBlocking {
             val api = CardinalBaseSdk.initialize(
-                applicationId = null,
+                projectId = null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
                 options = BasicSdkOptions(lenientJson = true)
