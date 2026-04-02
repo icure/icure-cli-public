@@ -1,19 +1,25 @@
 package com.icure.lib
 
 import com.icure.cardinal.sdk.CardinalBaseSdk
+import com.icure.cardinal.sdk.api.raw.RawTarificationApi
+import com.icure.cardinal.sdk.api.raw.impl.RawTarificationApiImpl
 import com.icure.cardinal.sdk.model.Code
+import com.icure.cardinal.sdk.model.ListOfIds
 import com.icure.cardinal.sdk.model.Tarification
 import com.icure.cardinal.sdk.model.base.StoredDocument
 import com.icure.cardinal.sdk.utils.Serialization
 import com.icure.cli.commands.api.Patch
+import com.icure.utils.InternalIcureApi
 import com.reidsync.kxjsonpatch.JsonPatch
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 
+@OptIn(InternalIcureApi::class)
 suspend fun patch(
     api: CardinalBaseSdk,
+    rawTarificationApi: RawTarificationApi,
     entity: Patch.Entity,
     ids: List<String>,
     patchs: List<String>,
@@ -26,15 +32,15 @@ suspend fun patch(
     val loader: suspend (ids: List<String>) -> List<StoredDocument> = when (entity) {
         Patch.Entity.code -> { codeIds: List<String> -> api.code.getCodes(codeIds) }
         Patch.Entity.tarification -> { invoicingCodeIds: List<String> ->
-            api.tarification.getTarifications(
-                invoicingCodeIds
-            )
+            rawTarificationApi.getTarifications(
+                ListOfIds(invoicingCodeIds)
+            ).successBody()
         }
     }
     val saver: suspend (ids: List<StoredDocument>) -> List<StoredDocument> = when (entity) {
         Patch.Entity.code -> { codes: List<StoredDocument> -> api.code.modifyCodes(codes.mapNotNull { it as? Code }) }
         Patch.Entity.tarification -> { invoicingCodes: List<StoredDocument> ->
-            invoicingCodes.mapNotNull { it as? Tarification }.map { api.tarification.modifyTarification(it) }
+            invoicingCodes.mapNotNull { it as? Tarification }.map { rawTarificationApi.modifyTarification(it).successBody() }
         }
     }
     val toJsonElement: (StoredDocument) -> JsonElement = when (entity) {

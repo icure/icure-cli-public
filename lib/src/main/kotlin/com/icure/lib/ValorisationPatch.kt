@@ -1,20 +1,25 @@
 package com.icure.lib
 
 import com.icure.cardinal.sdk.CardinalBaseSdk
+import com.icure.cardinal.sdk.api.raw.RawTarificationApi
 import com.icure.cardinal.sdk.model.Code
+import com.icure.cardinal.sdk.model.ListOfIds
 import com.icure.cardinal.sdk.model.Tarification
 import com.icure.cardinal.sdk.model.base.StoredDocument
 import com.icure.cardinal.sdk.model.filter.predicate.Predicate
 import com.icure.cardinal.sdk.utils.Serialization
 import com.icure.cli.commands.api.Patch
+import com.icure.utils.InternalIcureApi
 import com.reidsync.kxjsonpatch.JsonPatch
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 
+@OptIn(InternalIcureApi::class)
 suspend fun valorisationPatch(
     api: CardinalBaseSdk,
+    rawTarificationApi: RawTarificationApi,
     ids: List<String>,
     ref: String,
     predicate: String,
@@ -31,7 +36,7 @@ suspend fun valorisationPatch(
     groups.forEach { groupId ->
         try {
             echo("Checking group $groupId")
-            val entities = api.tarification.getTarifications(ids)
+            val entities = rawTarificationApi.getTarifications(ListOfIds(ids)).successBody()
             entities.forEach { e ->
                 val patched = e.copy(valorisations = e.valorisations.map {
                     if ((it.reference ?: emptySet()).contains(ref.toInt())) {
@@ -40,7 +45,7 @@ suspend fun valorisationPatch(
                         it
                     }
                 }.toSet())
-                api.tarification.modifyTarification(patched)
+                rawTarificationApi.modifyTarification(patched)
             }
         } catch (e: CancellationException) {
             //skip

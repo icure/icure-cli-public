@@ -27,14 +27,14 @@ class TransferGroup : CliktCommand("Set parent to undefined when it is blank") {
     override fun run() {
         runBlocking {
             val destinationApi = CardinalBaseSdk.initialize(
-                applicationId = null,
+                projectId =null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
                 options = BasicSdkOptions(lenientJson = true)
             )
 
             val sourceApi = CardinalBaseSdk.initialize(
-                applicationId = null,
+                projectId =null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(sourceCredentials.split(':').first(), sourceCredentials.split(':').drop(1).joinToString(":"))),
                 options = BasicSdkOptions(lenientJson = true)

@@ -1,6 +1,7 @@
 package com.icure.lib
 
 import com.icure.cardinal.sdk.CardinalBaseSdk
+import com.icure.cardinal.sdk.model.GroupScoped
 import com.icure.cardinal.sdk.model.Insurance
 import kotlinx.coroutines.CancellationException
 
@@ -14,17 +15,17 @@ suspend fun deployInsurances(api: CardinalBaseSdk, insurances: List<Insurance>, 
         try {
             echo("Importing into group $groupId")
             val existingInsurances =
-                (if (!local) insuranceApi.getInsurancesInGroup(groupId,
-                    insurances.joinToString(",") { c -> c.id }) else insuranceApi.getInsurances(insurances.map { c -> c.id })).associateBy { c -> c.id }
+                (if (!local) insuranceApi.inGroup.getInsurances(groupId,
+                    insurances.map { c -> c.id }).map { it.entity } else insuranceApi.getInsurances(insurances.map { c -> c.id })).associateBy { c -> c.id }
             val insurancesToAdd = insurances.filter { insurance -> !existingInsurances.containsKey(insurance.id) }
             val insurancesToUpdate = insurances.filter { insurance -> existingInsurances.containsKey(insurance.id) }
                 .map { insurance -> insurance.copy(rev = existingInsurances[insurance.id]?.rev) }
 
             insurancesToAdd.chunked(100).forEach { chunk ->
-                insuranceApi.createInsurancesInGroup(groupId, chunk)
+                insuranceApi.inGroup.createInsurances(chunk.map { GroupScoped(it, groupId) })
             }
             insurancesToUpdate.chunked(100).forEach { chunk ->
-                insuranceApi.modifyInsurancesInGroup(groupId, chunk)
+                insuranceApi.inGroup.modifyInsurances(chunk.map { GroupScoped(it, groupId) })
             }
             echo("Created ${insurancesToAdd.size} and updated ${insurancesToUpdate.size} insurances into group $groupId")
         } catch (e: CancellationException) {

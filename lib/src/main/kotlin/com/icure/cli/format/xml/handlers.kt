@@ -41,10 +41,10 @@ fun defaultHandler(type: String, persister: (code: Code) -> Unit) = object : Def
                     )
                 }
 
-                "CODE" -> charsHandler = { code["code"] = it }
-                "PARENT" -> charsHandler = { code["qualifiedLinks"] = mapOf("parent" to listOf("$type|$it|$version")) }
+                "CODE" -> charsHandler = { code["code"] = it.trim() }
+                "PARENT" -> charsHandler = { code["qualifiedLinks"] = mapOf("parent" to listOf("$type|${it.trim()}|$version")) }
                 "DESCRIPTION" -> charsHandler = {
-                    attributes?.getValue("L")?.let { attributesValue ->
+                    attributes?.getValue("L")?.trim()?.let { attributesValue ->
                         code["label"] = (code["label"] as Map<*, *>) + (attributesValue to it.trim())
                     }
                 }
@@ -118,43 +118,43 @@ fun beThesaurusHandler(type: String, persister: (code: Code) -> Unit) = object :
                     )
                 }
 
-                "IBUI" -> charsHandler = { ch -> code["code"] = ch }
+                "IBUI" -> charsHandler = { ch -> code["code"] = ch.trim() }
                 "ICPC_2_CODE_1", "ICPC_2_CODE_1X", "ICPC_2_CODE_1Y",
                 "ICPC_2_CODE_2", "ICPC_2_CODE_2X", "ICPC_2_CODE_2Y" -> charsHandler = { ch ->
-                    if (ch.isNotBlank()) code["links"] = (code["links"] as Set<*>) + ("ICPC|$ch|2")
-                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icpc2"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icpc2"] ?: emptyList()) + ("ICPC|$ch|2")
+                    if (ch.isNotBlank()) code["links"] = (code["links"] as Set<*>) + ("ICPC|${ch.trim()}|2")
+                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icpc2"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icpc2"] ?: emptyList()) + ("ICPC|${ch.trim()}|2")
                 }
 
                 "ICD_10_CODE_1", "ICD_10_CODE_1X", "ICD_10_CODE_1Y",
                 "ICD_10_CODE_2", "ICD_10_CODE_2X", "ICD_10_CODE_2Y" -> charsHandler = { ch ->
-                    if (ch.isNotBlank()) code["links"] = (code["links"] as Set<*>) + ("ICD|$ch|10")
-                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("ICD|$ch|10")
+                    if (ch.isNotBlank()) code["links"] = (code["links"] as Set<*>) + ("ICD|${ch.trim()}|10")
+                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("ICD|${ch.trim()}|10")
                 }
 
                 "FR_CLINICAL_LABEL" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) {
                         code["label"] = (code["label"] as Map<*, *>) +
-                                ("fr" to ch.replace("&apos;", "'"))
+                                ("fr" to ch.trim().replace("&apos;", "'"))
                     }
                 }
 
                 "NL_CLINICAL_LABEL" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) {
-                        code["label"] = (code["label"] as Map<*, *>) + ("nl" to ch)
+                        code["label"] = (code["label"] as Map<*, *>) + ("nl" to ch.trim())
                     }
                 }
 
                 "CLEFS_RECHERCHE_FR" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) {
                         code["searchTerms"] = (code["searchTerms"] as Map<*, *>) +
-                                ("fr" to ch.split(" ").map { it.trim() }.toSet())
+                                ("fr" to ch.trim().split(" ").map { it.trim() }.toSet())
                     }
                 }
 
                 "ZOEKTERMEN_NL" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) {
                         code["searchTerms"] = (code["searchTerms"] as Map<*, *>) +
-                                ("nl" to ch.split(" ").map { it.trim() }.toSet())
+                                ("nl" to ch.trim().split(" ").map { it.trim() }.toSet())
                     }
                 }
 
@@ -225,38 +225,38 @@ fun beThesaurusProcHandler(type: String, persister: (code: Code) -> Unit) = obje
                     )
                 }
 
-                "CISP" -> charsHandler = { ch -> code["code"] = ch }
+                "CISP" -> charsHandler = { ch -> code["code"] = ch.trim() }
                 "IBUI" -> charsHandler = { ch ->
-                    if (ch.isNotBlank()) code["links"] = setOf("BE-THESAURUS|$ch|$version")
-                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("BE-THESAURUS|$ch|$version")
+                    if (ch.isNotBlank()) code["links"] = setOf("BE-THESAURUS|${ch.trim()}|$version")
+                    if (ch.isNotBlank()) (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("BE-THESAURUS|${ch.trim()}|$version")
                 }
 
                 "IBUI_NOT_EXACT" -> charsHandler = { ch ->
                     if (ch.isNotBlank() && !code.containsKey("links")) {
-                        code["links"] = setOf("BE-THESAURUS|$ch|$version")
-                        (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("BE-THESAURUS|$ch|$version")
+                        code["links"] = setOf("BE-THESAURUS|${ch.trim()}|$version")
+                        (code["qualifiedLinks"] as MutableMap<String, List<String>>)["icd10"] = ((code["qualifiedLinks"] as Map<String, List<String>>)["icd10"] ?: emptyList()) + ("BE-THESAURUS|${ch.trim()}|$version")
                     }
                 }
 
                 "LABEL_FR" -> charsHandler = { ch ->
-                    if (ch.isNotBlank()) code["label"] = (code["label"] as Map<*, *>) + ("fr" to ch)
+                    if (ch.isNotBlank()) code["label"] = (code["label"] as Map<*, *>) + ("fr" to ch.trim())
                 }
 
                 "LABEL_NL" -> charsHandler = { ch ->
-                    if (ch.isNotBlank()) code["label"] = (code["label"] as Map<*, *>) + ("nl" to ch)
+                    if (ch.isNotBlank()) code["label"] = (code["label"] as Map<*, *>) + ("nl" to ch.trim())
                 }
 
                 "SYN_FR" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) {
                         code["searchTerms"] = (code["searchTerms"] as Map<*, *>) +
-                                ("fr" to ch.split(" ").map { it.trim() }.toSet())
+                                ("fr" to ch.trim().split(" ").map { it.trim() }.toSet())
                     }
                 }
 
                 "SYN_NL" -> charsHandler = { ch ->
                     if (ch.isNotBlank()) {
                         code["searchTerms"] = (code["searchTerms"] as Map<*, *>) +
-                                ("nl" to ch.split(" ").map { it.trim() }.toSet())
+                                ("nl" to ch.trim().split(" ").map { it.trim() }.toSet())
                     }
                 }
 
@@ -314,7 +314,7 @@ fun iso6391Handler(type: String, persister: suspend (code: Code) -> Unit) = obje
         qName?.let {
             when (it.uppercase(Locale.getDefault())) {
                 "VERSION" -> charsHandler = { ch ->
-                    version = ch
+                    version = ch.trim()
                 }
 
                 "VALUE" -> {
@@ -326,7 +326,7 @@ fun iso6391Handler(type: String, persister: suspend (code: Code) -> Unit) = obje
                     )
                 }
 
-                "CODE" -> charsHandler = { ch -> code["code"] = ch }
+                "CODE" -> charsHandler = { ch -> code["code"] = ch.trim() }
                 "DESCRIPTION" -> charsHandler = {
                     attributes?.getValue("L")?.let { attributesValue ->
                         code["label"] = (code["label"] as Map<*, *>) + (attributesValue to it.trim())
