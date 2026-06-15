@@ -29,5 +29,6 @@ class Api : CliktCommand() {
         this.subcommands(Patch())
         this.subcommands(ValorisationPatch())
         this.subcommands(TransferGroup())
+        this.subcommands(User())
     }
 }

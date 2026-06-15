@@ -7,6 +7,7 @@ class CliktConfig {
     private var _server: String? = null
     private var _username: String? = null
     private var _password: String? = null
+    private var _group: String? = null
 
     var client: HttpClient
         get() = _client!!
@@ -30,6 +31,12 @@ class CliktConfig {
         get() = _password!!
         set(value) {
             _password = value
+        }
+
+    var group: String
+        get() = _group!!
+        set(value) {
+            _group = value
         }
 
 }
