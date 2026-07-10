@@ -30,7 +30,7 @@ class DeployInsurances : CliktCommand("Deploy codes on all sub-groups available 
     override fun run() {
         runBlocking {
             val api = CardinalBaseSdk.initialize(
-                projectId =null,
+                projectId = null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
                 options = BasicSdkOptions(ignoreUnknownFields = true),
