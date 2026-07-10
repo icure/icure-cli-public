@@ -27,7 +27,7 @@ class FixParents : CliktCommand("Set parent to undefined when it is blank") {
                 projectId =null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
-                options = BasicSdkOptions(lenientJson = true)
+                options = BasicSdkOptions(ignoreUnknownFields = true)
             )
 
             fixParents(api, local, regexFilter) { echo(it) }

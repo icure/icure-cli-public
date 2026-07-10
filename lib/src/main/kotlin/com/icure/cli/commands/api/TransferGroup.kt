@@ -30,14 +30,14 @@ class TransferGroup : CliktCommand("Set parent to undefined when it is blank") {
                 projectId =null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
-                options = BasicSdkOptions(lenientJson = true)
+                options = BasicSdkOptions(ignoreUnknownFields = true)
             )
 
             val sourceApi = CardinalBaseSdk.initialize(
                 projectId =null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(sourceCredentials.split(':').first(), sourceCredentials.split(':').drop(1).joinToString(":"))),
-                options = BasicSdkOptions(lenientJson = true)
+                options = BasicSdkOptions(ignoreUnknownFields = true)
             )
 
             transferGroup(destinationApi, sourceApi, group, destination) { echo(it) }

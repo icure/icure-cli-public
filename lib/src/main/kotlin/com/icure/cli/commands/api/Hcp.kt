@@ -28,7 +28,7 @@ private suspend fun CliktConfig.sdk() = CardinalBaseSdk.initialize(
     projectId = null,
     baseUrl = server,
     authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(username, password)),
-    options = BasicSdkOptions(lenientJson = true),
+    options = BasicSdkOptions(ignoreUnknownFields = true),
 )
 
 class Hcp : CliktCommand(name = "hcp", help = "Manage healthcare parties in a group") {

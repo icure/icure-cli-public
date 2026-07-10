@@ -56,7 +56,7 @@ class Patch : CliktCommand("Patch entities") {
                         config.password
                     )
                 ),
-                options = BasicSdkOptions(lenientJson = true)
+                options = BasicSdkOptions(ignoreUnknownFields = true)
             )
 
             val rawTarificationApi = RawTarificationApiImpl(

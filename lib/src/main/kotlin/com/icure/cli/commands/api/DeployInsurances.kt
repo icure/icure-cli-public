@@ -33,7 +33,7 @@ class DeployInsurances : CliktCommand("Deploy codes on all sub-groups available 
                 projectId =null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
-                options = BasicSdkOptions(lenientJson = true),
+                options = BasicSdkOptions(ignoreUnknownFields = true),
             )
 
             val insurances = Serialization.json.decodeFromString<List<Insurance>>(path?.let { File(it).readText() }

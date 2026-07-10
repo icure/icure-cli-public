@@ -51,7 +51,7 @@ class ValorisationPatch : CliktCommand("Patch the valorisation of a tarification
                 projectId =null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
-                options = BasicSdkOptions(lenientJson = true)
+                options = BasicSdkOptions(ignoreUnknownFields = true)
             )
             val rawTarificationApi = RawTarificationApiImpl(
                 config.server, object : AuthProvider {

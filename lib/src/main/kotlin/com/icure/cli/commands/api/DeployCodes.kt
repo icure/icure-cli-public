@@ -42,7 +42,7 @@ class DeployCodes : CliktCommand("Deploy codes on all sub-groups available to th
                 projectId = null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
-                options = BasicSdkOptions(lenientJson = true),
+                options = BasicSdkOptions(ignoreUnknownFields = true),
             )
 
             val codes = xml?.let {

@@ -33,7 +33,7 @@ private suspend fun CliktConfig.sdk() = CardinalBaseSdk.initialize(
     projectId = null,
     baseUrl = server,
     authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(username, password)),
-    options = BasicSdkOptions(lenientJson = true),
+    options = BasicSdkOptions(ignoreUnknownFields = true),
 )
 
 class User : CliktCommand(help = "Manage users in a group") {

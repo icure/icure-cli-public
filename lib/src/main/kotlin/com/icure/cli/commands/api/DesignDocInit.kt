@@ -32,7 +32,7 @@ class DesignDocInit: CliktCommand(help = "Updates the design documents for a gro
                 projectId =null,
                 baseUrl = config.server,
                 authenticationMethod = AuthenticationMethod.UsingCredentials(UsernamePassword(config.username, config.password)),
-                options = BasicSdkOptions(lenientJson = true)
+                options = BasicSdkOptions(ignoreUnknownFields = true)
             )
 
 
